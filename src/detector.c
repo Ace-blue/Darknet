@@ -41,7 +41,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         else fclose(valid_file);
 
         cuda_set_device(gpus[0]);
-        // printf(" Prepare additional network for mAP calculation...\n");
+        printf(" Prepare additional network for mAP calculation...\n");
         net_map = parse_network_cfg_custom(cfgfile, 1, 1);
         net_map.benchmark_layers = benchmark_layers;
         const int net_classes = net_map.layers[net_map.n - 1].classes;
@@ -99,7 +99,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     }
 
     int imgs = net.batch * net.subdivisions * ngpus;
-    // printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
+    printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
     data train, buffer;
 
     layer l = net.layers[net.n - 1];
@@ -107,7 +107,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         layer lk = net.layers[k];
         if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
             l = lk;
-            // printf(" Detection layer: %d - type = %d \n", k, l.type);
+            printf(" Detection layer: %d - type = %d \n", k, l.type);
         }
     }
 
@@ -181,21 +181,21 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (net.sequential_subdivisions) args.threads = net.sequential_subdivisions * ngpus;
         else args.threads = net.subdivisions * ngpus;
         args.mini_batch = net.batch / net.time_steps;
-        // printf("\n Tracking! batch = %d, subdiv = %d, time_steps = %d, mini_batch = %d \n", net.batch, net.subdivisions, net.time_steps, args.mini_batch);
+        printf("\n Tracking! batch = %d, subdiv = %d, time_steps = %d, mini_batch = %d \n", net.batch, net.subdivisions, net.time_steps, args.mini_batch);
     }
     //printf(" imgs = %d \n", imgs);
 
     pthread_t load_thread = load_data(args);
 
     int count = 0;
-    double time_remaining, avg_time = -1, alpha_time = 0.01, time_already_used = 0, start_time = what_time_is_it_now();
+    double time_remaining, avg_time = -1, alpha_time = 0.01;
 
     //while(i*imgs < N*120){
     while (get_current_iteration(net) < net.max_batches) {
         if (l.random && count++ % 10 == 0) {
             float rand_coef = 1.4;
             if (l.random != 1.0) rand_coef = l.random;
-            // printf("Resizing, random_coef = %.2f \n", rand_coef);
+            printf("Resizing, random_coef = %.2f \n", rand_coef);
             float random_val = rand_scale(rand_coef);    // *x or /x
             int dim_w = roundl(random_val*init_w / net.resize_step + 1) * net.resize_step;
             int dim_h = roundl(random_val*init_h / net.resize_step + 1) * net.resize_step;
@@ -231,10 +231,10 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
                 net.batch = dim_b;
                 imgs = net.batch * net.subdivisions * ngpus;
                 args.n = imgs;
-                // printf("\n %d x %d  (batch = %d) \n", dim_w, dim_h, net.batch);
+                printf("\n %d x %d  (batch = %d) \n", dim_w, dim_h, net.batch);
             }
             else
-                // printf("\n %d x %d \n", dim_w, dim_h);
+                printf("\n %d x %d \n", dim_w, dim_h);
 
             pthread_join(load_thread, 0);
             train = buffer;
@@ -275,9 +275,9 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         */
 
         const double load_time = (what_time_is_it_now() - time);
-        // printf("Loaded: %lf seconds", load_time);
-        // if (load_time > 0.1 && avg_loss > 0) printf(" - performance bottleneck on CPU or Disk HDD/SSD");
-        // printf("\n");
+        printf("Loaded: %lf seconds", load_time);
+        if (load_time > 0.1 && avg_loss > 0) printf(" - performance bottleneck on CPU or Disk HDD/SSD");
+        printf("\n");
 
         time = what_time_is_it_now();
         float loss = 0;
@@ -304,16 +304,16 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         next_map_calc = fmax(next_map_calc, net.burn_in);
         //next_map_calc = fmax(next_map_calc, 400);
         if (calc_map) {
-            // printf("\n (next mAP calculation at %d iterations) ", next_map_calc);
+            printf("\n (next mAP calculation at %d iterations) ", next_map_calc);
             if (mean_average_precision > 0) printf("\n Last accuracy mAP@%0.2f = %2.2f %%, best = %2.2f %% ", iou_thresh, mean_average_precision * 100, best_map * 100);
         }
 
         #ifndef WIN32
         if (mean_average_precision > 0.0) {
-            printf("TraingProcess->,iteration=%d/%d,loss=%0.1f,map=%0.2f,best=%0.2f,hours-left=%0.2f,time-passed=%0.2f \n", iteration, net.max_batches, loss, mean_average_precision, best_map, avg_time, time_already_used);
+            printf("\033]2;%d/%d: loss=%0.1f map=%0.2f best=%0.2f hours left=%0.1f\007", iteration, net.max_batches, loss, mean_average_precision, best_map, avg_time);
         }
         else {
-            printf("TraingProcess->,iteration=%d/%d,loss=%0.1f,hours-left=%0.2f,time-passed=%0.2f \n", iteration, net.max_batches, loss, avg_time, time_already_used);
+            printf("\033]2;%d/%d: loss=%0.1f hours left=%0.1f\007", iteration, net.max_batches, loss, avg_time);
         }
         #endif
 
@@ -322,13 +322,27 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             else fprintf(stderr, "\n Tensor Cores are used.\n");
             fflush(stderr);
         }
-        // printf("\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours left\n", iteration, loss, avg_loss, get_current_rate(net), (what_time_is_it_now() - time), iteration*imgs, avg_time);
+
+        if (mean_average_precision > 0.0){
+        FILE * fid = fopen("txt_out.txt","a");
+        fprintf(fid,"{ \n");
+        fprintf(fid,"   \"now_iter\": %d, \n",iteration);
+        fprintf(fid,"   \"iter_all\": %d, \n",net.max_batches);
+        fprintf(fid,"   \"loss\": %0.1f, \n",loss);
+        fprintf(fid,"   \"map\": %0.2f, \n",mean_average_precision);
+        fprintf(fid,"   \"best\": %0.2f, \n",best_map);
+        fprintf(fid,"   \"hours_left\": %0.1f, \n",avg_time);
+        fprintf(fid,"}, \n");
+        fclose(fid);
+        }
+
+        printf("\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours left\n", iteration, loss, avg_loss, get_current_rate(net), (what_time_is_it_now() - time), iteration*imgs, avg_time);
         fflush(stdout);
 
         int draw_precision = 0;
         if (calc_map && (iteration >= next_map_calc || iteration == net.max_batches)) {
             if (l.random) {
-                // printf("Resizing to initial size: %d x %d ", init_w, init_h);
+                printf("Resizing to initial size: %d x %d ", init_w, init_h);
                 args.w = init_w;
                 args.h = init_h;
                 int k;
@@ -344,7 +358,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
                     net.batch = init_b;
                     imgs = init_b * net.subdivisions * ngpus;
                     args.n = imgs;
-                    // printf("\n %d x %d  (batch = %d) \n", init_w, init_h, init_b);
+                    printf("\n %d x %d  (batch = %d) \n", init_w, init_h, init_b);
                 }
                 pthread_join(load_thread, 0);
                 free_data(train);
@@ -363,6 +377,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
             iter_map = iteration;
             mean_average_precision = validate_detector_map(datacfg, cfgfile, weightfile, thresh, iou_thresh, 0, net.letter_box, &net_map);// &net_combined);
+            // mean_average_precision = validate_detector_map(datacfg, cfgfile, weightfile, thresh, iou_thresh, 0, net.letter_box, NULL);// &net_combined);
             printf("\n mean_average_precision (mAP@%0.2f) = %f \n", iou_thresh, mean_average_precision);
             if (mean_average_precision >= best_map) {
                 best_map = mean_average_precision;
@@ -375,7 +390,6 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             draw_precision = 1;
         }
         time_remaining = ((net.max_batches - iteration) / ngpus)*(what_time_is_it_now() - time + load_time) / 60 / 60;
-        time_already_used = (what_time_is_it_now() - start_time) / 60 / 60;
         // set initial value, even if resume training from 10000 iteration
         if (avg_time < 0) avg_time = time_remaining;
         else avg_time = alpha_time * time_remaining + (1 -  alpha_time) * avg_time;
@@ -660,7 +674,7 @@ void validate_detector(char *datacfg, char *cfgfile, char *weightfile, char *out
     //set_batch_network(&net, 1);
     fuse_conv_batchnorm(net);
     calculate_binary_weights(net);
-    // fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
+    fprintf(stderr, "Learning Rate: %g, Momentum: %g, Decay: %g\n", net.learning_rate, net.momentum, net.decay);
     srand(time(0));
 
     list *plist = get_paths(valid_images);
@@ -672,7 +686,7 @@ void validate_detector(char *datacfg, char *cfgfile, char *weightfile, char *out
         layer lk = net.layers[k];
         if (lk.type == YOLO || lk.type == GAUSSIAN_YOLO || lk.type == REGION) {
             l = lk;
-            // printf(" Detection layer: %d - type = %d \n", k, l.type);
+            printf(" Detection layer: %d - type = %d \n", k, l.type);
         }
     }
     int classes = l.classes;
@@ -1748,7 +1762,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
                     }
                 }
                 if (class_id >= 0) {
-                    // sprintf(buff, "%d %2.4f %2.4f %2.4f %2.4f\n", class_id, dets[i].bbox.x, dets[i].bbox.y, dets[i].bbox.w, dets[i].bbox.h);
+                    sprintf(buff, "%d %2.4f %2.4f %2.4f %2.4f\n", class_id, dets[i].bbox.x, dets[i].bbox.y, dets[i].bbox.w, dets[i].bbox.h);
                     fwrite(buff, sizeof(char), strlen(buff), fw);
                 }
             }

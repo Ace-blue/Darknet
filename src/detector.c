@@ -41,7 +41,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         else fclose(valid_file);
 
         cuda_set_device(gpus[0]);
-        printf(" Prepare additional network for mAP calculation...\n");
+//         printf(" Prepare additional network for mAP calculation...\n");
         net_map = parse_network_cfg_custom(cfgfile, 1, 1);
         net_map.benchmark_layers = benchmark_layers;
         const int net_classes = net_map.layers[net_map.n - 1].classes;
@@ -62,7 +62,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
     srand(time(0));
     char *base = basecfg(cfgfile);
-    printf("%s\n", base);
+//     printf("%s\n", base);
     float avg_loss = -1;
     float avg_contrastive_acc = 0;
     network* nets = (network*)xcalloc(ngpus, sizeof(network));
@@ -325,13 +325,13 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
           
         if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
-        fprintf(fid,"{ \n");
-        fprintf(fid,"   \"now_iter\": %d, \n",iteration);
-        fprintf(fid,"   \"iter_all\": %d, \n",net.max_batches);
-        fprintf(fid,"   \"loss\": %0.1f, \n",loss);
-        fprintf(fid,"   \"map\": %0.2f, \n",mean_average_precision);
-        fprintf(fid,"   \"best\": %0.2f, \n",best_map);
-        fprintf(fid,"   \"hours_left\": %0.1f, \n",avg_time);
+        fprintf(fid,"{");
+        fprintf(fid,"   \"now_iter\": %d",iteration);
+        fprintf(fid,"   \"iter_all\": %d",net.max_batches);
+        fprintf(fid,"   \"loss\": %0.1f",loss);
+        fprintf(fid,"   \"map\": %0.2f",mean_average_precision);
+        fprintf(fid,"   \"best\": %0.2f",best_map);
+        fprintf(fid,"   \"hours_left\": %0.1f",avg_time);
         fprintf(fid,"}, \n");
         fclose(fid);
         }      
@@ -1400,10 +1400,10 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
     free(fp_for_thresh_per_class);
 
     fprintf(stderr, "Total Detection Time: %d Seconds\n", (int)(time(0) - start));
-    printf("\nSet -points flag:\n");
-    printf(" `-points 101` for MS COCO \n");
-    printf(" `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data) \n");
-    printf(" `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom dataset\n");
+//     printf("\nSet -points flag:\n");
+//     printf(" `-points 101` for MS COCO \n");
+//     printf(" `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data) \n");
+//     printf(" `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom dataset\n");
     if (reinforcement_fd != NULL) fclose(reinforcement_fd);
 
     // free memory

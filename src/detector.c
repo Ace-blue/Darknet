@@ -326,12 +326,12 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
         fprintf(fid,"{");
-        fprintf(fid,"   \"now_iter\": %d",iteration);
-        fprintf(fid,"   \"iter_all\": %d",net.max_batches);
-        fprintf(fid,"   \"loss\": %0.1f",loss);
-        fprintf(fid,"   \"map\": %0.2f",mean_average_precision);
-        fprintf(fid,"   \"best\": %0.2f",best_map);
-        fprintf(fid,"   \"hours_left\": %0.1f",avg_time);
+        fprintf(fid,"\"now_iter\": %d,",iteration);
+        fprintf(fid,"\"iter_all\": %d,",net.max_batches);
+        fprintf(fid,"\"loss\": %0.1f,",loss);
+        fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
+        fprintf(fid,"\"best\": %0.2f,",best_map);
+        fprintf(fid,"\"hours_left\": %0.1f",avg_time);
         fprintf(fid,"}, \n");
         fclose(fid);
         }      

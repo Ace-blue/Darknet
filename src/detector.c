@@ -189,7 +189,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
     int count = 0;
     double time_remaining, avg_time = -1, alpha_time = 0.01;
-
+    double start_time = what_time_is_it_now();
     //while(i*imgs < N*120){
     while (get_current_iteration(net) < net.max_batches) {
         if (l.random && count++ % 10 == 0) {
@@ -326,12 +326,14 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
         fprintf(fid,"{");
-        fprintf(fid,"\"now_iter\": %d,",iteration);
-        fprintf(fid,"\"iter_all\": %d,",net.max_batches);
+        fprintf(fid,"\"time_now\": \"%s\",",what_time_is_it_now());
+        fprintf(fid,"\"iteration_now\": %d,",iteration);
+        fprintf(fid,"\"iteration_all\": %d,",net.max_batches);
         fprintf(fid,"\"loss\": %0.1f,",loss);
         fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
         fprintf(fid,"\"best\": %0.2f,",best_map);
         fprintf(fid,"\"hours_left\": %0.1f",avg_time);
+        fprintf(fid,"\"time-passed\": %0.1f",what_time_is_it_now() - start_time );
         fprintf(fid,"}, \n");
         fclose(fid);
         }      

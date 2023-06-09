@@ -326,6 +326,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
         fprintf(fid,"{");
+        fprintf(fid,"\"training_start_time\": \"%s\",",start_time);
         fprintf(fid,"\"time_now\": \"%s\",",what_time_is_it_now());
         fprintf(fid,"\"iteration_now\": %d,",iteration);
         fprintf(fid,"\"iteration_all\": %d,",net.max_batches);

@@ -322,22 +322,29 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             else fprintf(stderr, "\n Tensor Cores are used.\n");
             fflush(stderr);
         }
-          
-//         if (mean_average_precision > 0.0){
+        // if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
         fprintf(fid,"{");
-        fprintf(fid,"\"training_start_time\": \"%s\",",start_time);
-        fprintf(fid,"\"time_now\": \"%s\",",what_time_is_it_now());
         fprintf(fid,"\"iteration_now\": %d,",iteration);
         fprintf(fid,"\"iteration_all\": %d,",net.max_batches);
-        fprintf(fid,"\"loss\": %0.1f,",loss);
-        fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
-        fprintf(fid,"\"best\": %0.2f,",best_map);
-        fprintf(fid,"\"hours_left\": %0.1f",avg_time);
-        fprintf(fid,"\"time-passed\": %0.1f",what_time_is_it_now() - start_time );
+        fprintf(fid,"\"loss\": %0.0f,",loss);
+        if (mean_average_precision > 0.0){
+            fprintf(fid,"\"map\": %0.0f,",mean_average_precision);
+            fprintf(fid,"\"best\": %0.0f,",best_map);
+        }
+        else{
+            fprintf(fid,"\"map\": -1,");
+            fprintf(fid,"\"best\": -1,");
+        }
+        fprintf(fid,"\"training_start_time\": \"%0.0f\",",start_time);
+        fprintf(fid,"\"time_now\": \"%0.0f\",",what_time_is_it_now());
+        // fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
+        // fprintf(fid,"\"best\": %0.2f,",best_map);
+        fprintf(fid,"\"hours_left\": %0.2f,",avg_time);
+        fprintf(fid,"\"time-passed\": %0.2f",what_time_is_it_now() - start_time );
         fprintf(fid,"}, \n");
         fclose(fid);
-//         }      
+        // }      
         
         printf("\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours left\n", iteration, loss, avg_loss, get_current_rate(net), (what_time_is_it_now() - time), iteration*imgs, avg_time);
         fflush(stdout);

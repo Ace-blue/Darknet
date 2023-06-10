@@ -323,7 +323,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             fflush(stderr);
         }
           
-        if (mean_average_precision > 0.0){
+//         if (mean_average_precision > 0.0){
         FILE * fid = fopen("txt_out.txt","a");
         fprintf(fid,"{");
         fprintf(fid,"\"training_start_time\": \"%s\",",start_time);
@@ -337,7 +337,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         fprintf(fid,"\"time-passed\": %0.1f",what_time_is_it_now() - start_time );
         fprintf(fid,"}, \n");
         fclose(fid);
-        }      
+//         }      
         
         printf("\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours left\n", iteration, loss, avg_loss, get_current_rate(net), (what_time_is_it_now() - time), iteration*imgs, avg_time);
         fflush(stdout);

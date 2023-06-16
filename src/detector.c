@@ -336,11 +336,17 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             fprintf(fid,"\"map\": -1,");
             fprintf(fid,"\"best\": -1,");
         }
+        if (iteration_now>
         fprintf(fid,"\"training_start_time\": \"%0.0f\",",start_time);
         fprintf(fid,"\"time_now\": \"%0.0f\",",what_time_is_it_now());
         // fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
         // fprintf(fid,"\"best\": %0.2f,",best_map);
-        fprintf(fid,"\"hours_left\": %0.2f,",avg_time);
+        if (iteration_now > iteration_all - 10){
+            fprintf(fid,"\"hours_left\": %0.2f,",avg_time);
+        }
+        else{
+            fprintf(fid,"\"hours_left\": 0,");
+        }
         fprintf(fid,"\"time-passed\": %0.2f",what_time_is_it_now() - start_time );
         fprintf(fid,"}, \n");
         fclose(fid);

@@ -340,7 +340,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         fprintf(fid,"\"time_now\": \"%0.0f\",",what_time_is_it_now());
         // fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
         // fprintf(fid,"\"best\": %0.2f,",best_map);
-        if (iteration > net.max_batches - 10){
+        if (iteration < (net.max_batches - 10)){
             fprintf(fid,"\"hours_left\": %0.2f,",avg_time);
         }
         else{

@@ -327,7 +327,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         fprintf(fid,"{");
         fprintf(fid,"\"iteration_now\": %d,",iteration);
         fprintf(fid,"\"iteration_all\": %d,",net.max_batches);
-        fprintf(fid,"\"loss\": %0.0f,",loss);
+        fprintf(fid,"\"loss\": %0.2f,",loss);
         if (mean_average_precision > 0.0){
             fprintf(fid,"\"map\": %0.2f,",mean_average_precision);
             fprintf(fid,"\"best\": %0.2f,",best_map);

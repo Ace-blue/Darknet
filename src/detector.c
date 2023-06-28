@@ -347,7 +347,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
             fprintf(fid,"\"hours_left\": 0,");
         }
         fprintf(fid,"\"time-passed\": %0.2f",what_time_is_it_now() - start_time );
-        fprintf(fid,"}, \n");
+        fprintf(fid,"}\n");
         fclose(fid);
         // }      
         
